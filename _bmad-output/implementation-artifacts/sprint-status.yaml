@@ -1,0 +1,82 @@
+# generated: 2026-04-17
+# last_updated: 2026-04-17
+# project: capra-investing-framework
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: "2026-04-17"
+last_updated: "2026-04-20" # verified with Docker
+project: capra-investing-framework
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # ─── Epic 1: Foundation, Auth & Initial Setup ───────────────────────────────
+  epic-1: in-progress
+  1-1-project-scaffold-and-docker: review
+  1-2-database-schema-and-migrations: review
+  1-3-authentication-backend: ready-for-dev
+  1-4-authentication-frontend: ready-for-dev
+  1-5-kite-credential-storage: ready-for-dev
+  epic-1-retrospective: optional
+
+  # ─── Epic 2: CSV Data Upload ─────────────────────────────────────────────────
+  epic-2: backlog
+  2-1-csv-upload-backend: ready-for-dev
+  2-2-csv-upload-frontend: ready-for-dev
+  epic-2-retrospective: optional
+
+  # ─── Epic 3: Computation Engine & Data Refresh ───────────────────────────────
+  epic-3: backlog
+  3-1-computation-engine-core: ready-for-dev
+  3-2-kite-connect-client: ready-for-dev
+  3-3-refresh-endpoint-and-orchestration: ready-for-dev
+  epic-3-retrospective: optional
+
+  # ─── Epic 4: Portfolio View ──────────────────────────────────────────────────
+  epic-4: backlog
+  4-1-portfolio-view-ui: ready-for-dev
+  epic-4-retrospective: optional
+
+  # ─── Epic 5: Stock Analysis — Decision Cockpit ───────────────────────────────
+  epic-5: backlog
+  5-1-stock-analysis-api: ready-for-dev
+  5-2-stock-analysis-ui: ready-for-dev
+  epic-5-retrospective: optional
+
+  # ─── Epic 6: User Management ─────────────────────────────────────────────────
+  epic-6: backlog
+  6-1-user-management-backend: ready-for-dev
+  6-2-user-management-frontend: ready-for-dev
+  epic-6-retrospective: optional

@@ -1,0 +1,34 @@
+name: Test Docker Compose
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+
+  test-docker-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Copy env file
+        run: cp .env.example .env
+      - run: docker compose -f docker-compose.yml build
+      - run: docker compose -f docker-compose.yml down -v --remove-orphans
+      - run: docker compose -f docker-compose.yml up -d --wait backend frontend
+      - name: Test backend is up
+        run: curl http://localhost:8000/api/v1/utils/health-check/
+      - name: Test backend returns JSON for API routes
+        run: |
+          response=$(curl -s -o /dev/null -w "%{content_type}" -X POST http://localhost:8000/api/v1/login/access-token)
+          echo "Content-Type: $response"
+          [[ "$response" == *"application/json"* ]]
+      - name: Test frontend is up
+        run: curl http://localhost:5173
+      - run: docker compose -f docker-compose.yml down -v --remove-orphans
