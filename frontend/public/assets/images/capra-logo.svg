@@ -1,0 +1,24 @@
+<svg viewBox="0 0 160 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon mark (same as capra-icon.svg) -->
+  <polygon points="8,34 22,20 34,28 28,40 14,40" fill="#3730a3"/>
+  <circle cx="8" cy="35" r="3" fill="#3730a3"/>
+  <circle cx="14" cy="29" r="1.5" fill="white"/>
+  <path d="M 9,39 Q 5,44 8,48" stroke="#3730a3" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M 22,20 Q 26,10 36,8 Q 42,8 44,14 Q 42,20 38,22 Q 34,18 22,20 Z" fill="#d97706"/>
+
+  <!-- Wordmark -->
+  <text
+    x="56" y="30"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+    font-weight="700"
+    font-size="22"
+    letter-spacing="3"
+    fill="#0f172a">CAPRA</text>
+  <text
+    x="57" y="42"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+    font-weight="400"
+    font-size="8"
+    letter-spacing="2"
+    fill="#6366f1">INVESTING FRAMEWORK</text>
+</svg>
