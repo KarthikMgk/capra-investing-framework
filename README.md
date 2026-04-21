@@ -1,233 +1,234 @@
-# Full Stack FastAPI Template
+# Capra Investing Framework
 
-<a href="https://github.com/fastapi/full-stack-fastapi-template/actions?query=workflow%3A%22Test+Docker+Compose%22" target="_blank"><img src="https://github.com/fastapi/full-stack-fastapi-template/workflows/Test%20Docker%20Compose/badge.svg" alt="Test Docker Compose"></a>
-<a href="https://github.com/fastapi/full-stack-fastapi-template/actions?query=workflow%3A%22Test+Backend%22" target="_blank"><img src="https://github.com/fastapi/full-stack-fastapi-template/workflows/Test%20Backend/badge.svg" alt="Test Backend"></a>
-<a href="https://coverage-badge.samuelcolvin.workers.dev/redirect/fastapi/full-stack-fastapi-template" target="_blank"><img src="https://coverage-badge.samuelcolvin.workers.dev/fastapi/full-stack-fastapi-template.svg" alt="Coverage"></a>
+A personal web application that operationalises the **Multi-Layer Capital Allocation System v3.0** — a 15-factor, regime-based framework for entry, exit, and position sizing decisions on Nifty 50 stocks.
 
-## Technology Stack and Features
+The app replaces a manual spreadsheet with an automated cockpit: search a stock, hit refresh, get the answer in under 3 seconds.
 
-- ⚡ [**FastAPI**](https://fastapi.tiangolo.com) for the Python backend API.
-  - 🧰 [SQLModel](https://sqlmodel.tiangolo.com) for the Python SQL database interactions (ORM).
-  - 🔍 [Pydantic](https://docs.pydantic.dev), used by FastAPI, for the data validation and settings management.
-  - 💾 [PostgreSQL](https://www.postgresql.org) as the SQL database.
-- 🚀 [React](https://react.dev) for the frontend.
-  - 💃 Using TypeScript, hooks, [Vite](https://vitejs.dev), and other parts of a modern frontend stack.
-  - 🎨 [Tailwind CSS](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) for the frontend components.
-  - 🤖 An automatically generated frontend client.
-  - 🧪 [Playwright](https://playwright.dev) for End-to-End testing.
-  - 🦇 Dark mode support.
-- 🐋 [Docker Compose](https://www.docker.com) for development and production.
-- 🔒 Secure password hashing by default.
-- 🔑 JWT (JSON Web Token) authentication.
-- 📫 Email based password recovery.
-- 📬 [Mailcatcher](https://mailcatcher.me) for local email testing during development.
-- ✅ Tests with [Pytest](https://pytest.org).
-- 📞 [Traefik](https://traefik.io) as a reverse proxy / load balancer.
-- 🚢 Deployment instructions using Docker Compose, including how to set up a frontend Traefik proxy to handle automatic HTTPS certificates.
-- 🏭 CI (continuous integration) and CD (continuous deployment) based on GitHub Actions.
+---
 
-### Dashboard Login
+## The Decision Surface
 
-[![API docs](img/login.png)](https://github.com/fastapi/full-stack-fastapi-template)
+Every stock analysis produces a single 3-pillar answer:
 
-### Dashboard - Admin
+| Pillar | What it answers |
+|---|---|
+| **Score** | Weighted composite across 9 factors (−1 to +1) |
+| **Signal** | 5-state decision: Strong Buy / Buy / Hold / Sell / Strong Sell |
+| **Position Size** | 3-layer sizing: Base × Conviction multiplier × Volatility adjustment |
 
-[![API docs](img/dashboard.png)](https://github.com/fastapi/full-stack-fastapi-template)
+Each pillar is expandable to show the full factor breakdown, conditions that triggered the signal, and the step-by-step position size calculation.
 
-### Dashboard - Items
+---
 
-[![API docs](img/dashboard-items.png)](https://github.com/fastapi/full-stack-fastapi-template)
+## Tech Stack
 
-### Dashboard - Dark Mode
+**Backend**
+- Python 3.12 · FastAPI · SQLModel · PostgreSQL
+- Cookie-based JWT auth (httpOnly) with JTI blacklist (server-side logout)
+- AES-256 encryption for Kite API credentials at rest
+- Argon2 password hashing (via pwdlib)
 
-[![API docs](img/dashboard-dark.png)](https://github.com/fastapi/full-stack-fastapi-template)
+**Frontend**
+- React 19 · TypeScript · Vite
+- TanStack Router (file-based routing) · TanStack Query
+- Tailwind CSS v4 · shadcn/ui components
+- Playwright for E2E tests
 
-### Interactive API Documentation
+**Infrastructure**
+- Docker Compose (single VPS deployment)
+- Traefik reverse proxy with automatic TLS
+- DigitalOcean Mumbai (data localisation for Indian equities)
 
-[![API docs](img/docs.png)](https://github.com/fastapi/full-stack-fastapi-template)
+**Data Sources**
+- [Kite Connect API](https://kite.trade) — live prices, portfolio holdings, Nifty 50 index, USD/INR, Gold
+- Screener.in CSV — Nifty 50 fundamentals and earnings data (manual upload, monthly cadence)
+- RBI macro CSV — repo rate, credit growth, liquidity indicators (manual upload, monthly cadence)
 
-## How To Use It
+---
 
-You can **just fork or clone** this repository and use it as is.
+## Roles
 
-✨ It just works. ✨
+| Role | Capabilities |
+|---|---|
+| **Admin** | All access — trigger refresh, upload CSVs, manage users, view analysis |
+| **Viewer** | Read-only — view portfolio, stock analysis, signals |
 
-### How to Use a Private Repository
+---
 
-If you want to have a private repository, GitHub won't allow you to simply fork it as it doesn't allow changing the visibility of forks.
+## Project Structure
 
-But you can do the following:
-
-- Create a new GitHub repo, for example `my-full-stack`.
-- Clone this repository manually, set the name with the name of the project you want to use, for example `my-full-stack`:
-
-```bash
-git clone git@github.com:fastapi/full-stack-fastapi-template.git my-full-stack
+```
+capra-investing-framework/
+├── backend/                  # FastAPI application
+│   ├── app/
+│   │   ├── api/routes/       # auth, users, upload, computation, portfolio
+│   │   ├── core/             # config, security, exceptions
+│   │   ├── models/           # SQLModel DB models
+│   │   ├── schemas/          # Pydantic API schemas
+│   │   ├── crud/             # Database operations
+│   │   └── computation/      # Score engine (decoupled from Kite client)
+│   ├── alembic/              # DB migrations
+│   └── tests/
+├── frontend/                 # React SPA
+│   └── src/
+│       ├── routes/           # TanStack file-based routes
+│       ├── components/       # UI components (shadcn + custom)
+│       ├── hooks/            # TanStack Query hooks
+│       └── client/           # Auto-generated API client
+├── _bmad-output/             # Design artifacts (PRD, architecture, epics)
+├── compose.yml               # Development Docker Compose
+├── compose.traefik.yml       # Production Traefik config
+└── .env.example              # Environment variable reference
 ```
 
-- Enter into the new directory:
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Docker & Docker Compose
+- Python 3.12+ (for running backend tests outside Docker)
+- Node.js / Bun (for frontend development)
+
+### 1. Configure environment
 
 ```bash
-cd my-full-stack
+cp .env.example .env
 ```
 
-- Set the new origin to your new repository, copy it from the GitHub interface, for example:
+Edit `.env` and set at minimum:
 
 ```bash
-git remote set-url origin git@github.com:octocat/my-full-stack.git
+SECRET_KEY=<generate: python -c "import secrets; print(secrets.token_urlsafe(32))">
+ENCRYPTION_KEY=<generate: python -c "import secrets; print(secrets.token_urlsafe(32))">
+KITE_ENCRYPTION_KEY=<generate: python -c "import secrets; print(secrets.token_urlsafe(32))">
+FIRST_SUPERUSER_PASSWORD=<your admin password>
+POSTGRES_PASSWORD=<your db password>
 ```
 
-- Add this repo as another "remote" to allow you to get updates later:
+### 2. Start the stack
 
 ```bash
-git remote add upstream git@github.com:fastapi/full-stack-fastapi-template.git
+docker compose up -d
 ```
 
-- Push the code to your new repository:
+Services:
+- Backend API: `http://localhost:8000`
+- API docs: `http://localhost:8000/docs`
+- Frontend: `http://localhost:5173` (dev server) or served from backend in production
+- Mailcatcher: `http://localhost:1080`
 
-```bash
-git push -u origin master
+### 3. Default admin credentials
+
+```
+Email:    admin@capra.example.com   (set via FIRST_SUPERUSER_EMAIL)
+Password: changeme                  (set via FIRST_SUPERUSER_PASSWORD)
 ```
 
-### Update From the Original Template
+The admin user is seeded automatically on first startup.
 
-After cloning the repository, and after doing changes, you might want to get the latest changes from this original template.
-
-- Make sure you added the original repository as a remote, you can check it with:
-
-```bash
-git remote -v
-
-origin    git@github.com:octocat/my-full-stack.git (fetch)
-origin    git@github.com:octocat/my-full-stack.git (push)
-upstream    git@github.com:fastapi/full-stack-fastapi-template.git (fetch)
-upstream    git@github.com:fastapi/full-stack-fastapi-template.git (push)
-```
-
-- Pull the latest changes without merging:
-
-```bash
-git pull --no-commit upstream master
-```
-
-This will download the latest changes from this template without committing them, that way you can check everything is right before committing.
-
-- If there are conflicts, solve them in your editor.
-
-- Once you are done, commit the changes:
-
-```bash
-git merge --continue
-```
-
-### Configure
-
-You can then update configs in the `.env` files to customize your configurations.
-
-Before deploying it, make sure you change at least the values for:
-
-- `SECRET_KEY`
-- `FIRST_SUPERUSER_PASSWORD`
-- `POSTGRES_PASSWORD`
-
-You can (and should) pass these as environment variables from secrets.
-
-Read the [deployment.md](./deployment.md) docs for more details.
-
-### Generate Secret Keys
-
-Some environment variables in the `.env` file have a default value of `changethis`.
-
-You have to change them with a secret key, to generate secret keys you can run the following command:
-
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
-```
-
-Copy the content and use that as password / secret key. And run that again to generate another secure key.
-
-## How To Use It - Alternative With Copier
-
-This repository also supports generating a new project using [Copier](https://copier.readthedocs.io).
-
-It will copy all the files, ask you configuration questions, and update the `.env` files with your answers.
-
-### Install Copier
-
-You can install Copier with:
-
-```bash
-pip install copier
-```
-
-Or better, if you have [`pipx`](https://pipx.pypa.io/), you can run it with:
-
-```bash
-pipx install copier
-```
-
-**Note**: If you have `pipx`, installing copier is optional, you could run it directly.
-
-### Generate a Project With Copier
-
-Decide a name for your new project's directory, you will use it below. For example, `my-awesome-project`.
-
-Go to the directory that will be the parent of your project, and run the command with your project's name:
-
-```bash
-copier copy https://github.com/fastapi/full-stack-fastapi-template my-awesome-project --trust
-```
-
-If you have `pipx` and you didn't install `copier`, you can run it directly:
-
-```bash
-pipx run copier copy https://github.com/fastapi/full-stack-fastapi-template my-awesome-project --trust
-```
-
-**Note** the `--trust` option is necessary to be able to execute a [post-creation script](https://github.com/fastapi/full-stack-fastapi-template/blob/master/.copier/update_dotenv.py) that updates your `.env` files.
-
-### Input Variables
-
-Copier will ask you for some data, you might want to have at hand before generating the project.
-
-But don't worry, you can just update any of that in the `.env` files afterwards.
-
-The input variables, with their default values (some auto generated) are:
-
-- `project_name`: (default: `"FastAPI Project"`) The name of the project, shown to API users (in .env).
-- `stack_name`: (default: `"fastapi-project"`) The name of the stack used for Docker Compose labels and project name (no spaces, no periods) (in .env).
-- `secret_key`: (default: `"changethis"`) The secret key for the project, used for security, stored in .env, you can generate one with the method above.
-- `first_superuser`: (default: `"admin@example.com"`) The email of the first superuser (in .env).
-- `first_superuser_password`: (default: `"changethis"`) The password of the first superuser (in .env).
-- `smtp_host`: (default: "") The SMTP server host to send emails, you can set it later in .env.
-- `smtp_user`: (default: "") The SMTP server user to send emails, you can set it later in .env.
-- `smtp_password`: (default: "") The SMTP server password to send emails, you can set it later in .env.
-- `emails_from_email`: (default: `"info@example.com"`) The email account to send emails from, you can set it later in .env.
-- `postgres_password`: (default: `"changethis"`) The password for the PostgreSQL database, stored in .env, you can generate one with the method above.
-- `sentry_dsn`: (default: "") The DSN for Sentry, if you are using it, you can set it later in .env.
-
-## Backend Development
-
-Backend docs: [backend/README.md](./backend/README.md).
-
-## Frontend Development
-
-Frontend docs: [frontend/README.md](./frontend/README.md).
-
-## Deployment
-
-Deployment docs: [deployment.md](./deployment.md).
+---
 
 ## Development
 
-General development docs: [development.md](./development.md).
+### Backend
 
-This includes using Docker Compose, custom local domains, `.env` configurations, etc.
+```bash
+cd backend
 
-## Release Notes
+# Run tests
+python -m pytest
 
-Check the file [release-notes.md](./release-notes.md).
+# Run specific test files
+python -m pytest tests/test_api_auth.py -v
+
+# Database migrations
+alembic upgrade head
+alembic revision --autogenerate -m "description"
+```
+
+### Frontend
+
+```bash
+cd frontend
+
+bun install
+bun dev          # start dev server on :5173
+bunx playwright test         # E2E tests
+bunx playwright test --ui    # Playwright UI mode
+```
+
+### Regenerate API client (after backend schema changes)
+
+```bash
+cd frontend
+bun run generate-client
+```
+
+---
+
+## Environment Variables
+
+| Variable | Description | Required |
+|---|---|---|
+| `SECRET_KEY` | JWT signing key (min 32 chars) | Yes |
+| `ENCRYPTION_KEY` | General encryption key (32-byte base64) | Yes |
+| `KITE_ENCRYPTION_KEY` | Kite credential encryption key (32-byte base64) | Yes |
+| `POSTGRES_PASSWORD` | PostgreSQL password | Yes |
+| `FIRST_SUPERUSER_EMAIL` | Admin user email (seeded on startup) | Yes |
+| `FIRST_SUPERUSER_PASSWORD` | Admin user password | Yes |
+| `ENVIRONMENT` | `local` \| `staging` \| `production` (controls cookie security) | Yes |
+| `BACKEND_CORS_ORIGINS` | Allowed CORS origins | Yes |
+| `SMTP_HOST` | Email server (optional — leave blank to disable) | No |
+| `SENTRY_DSN` | Sentry error tracking (optional) | No |
+
+See `.env.example` for the full reference with all defaults.
+
+---
+
+## Build Status
+
+| Epic | Description | Status |
+|---|---|---|
+| **Epic 1** | Foundation, Auth & Initial Setup | In progress |
+| Story 1.1 | Project scaffold (FastAPI template) | Done |
+| Story 1.2 | Database schema & migrations | Done |
+| Story 1.3 | Authentication backend (cookie JWT + JTI blacklist) | Done |
+| Story 1.4 | Authentication frontend (login page, protected routes) | Next |
+| Story 1.5 | Kite credential storage (AES-256 encrypted settings) | Pending |
+| **Epic 2** | CSV Upload | Pending |
+| **Epic 3** | Computation Engine | Pending |
+| **Epic 4** | Portfolio View | Pending |
+| **Epic 5** | Stock Analysis | Pending |
+| **Epic 6** | User Management | Pending |
+
+---
+
+## The Framework (brief)
+
+The Multi-Layer Capital Allocation System v3.0 evaluates each Nifty 50 stock across:
+
+- **9 weighted factors** grouped into 3 lenses: Valuation, Earnings Quality, Liquidity/Momentum
+- **Regime detection** — macro regime (RBI rate cycle, credit growth) modulates factor weights
+- **Decision Signal** — derived from composite score + Momentum ROC + Asymmetry Index (−Valuation + Earnings + Liquidity)
+- **3-layer position sizing** — Base allocation × Conviction multiplier (score strength) × Volatility adjustment (relative to Nifty 50)
+- **Time Stop** — months held without meaningful price movement, flags stale positions
+
+The framework weights are hardcoded. The app provides clarity, not configurability.
+
+---
+
+## Security Notes
+
+- JWT tokens are stored in httpOnly cookies — never in localStorage or JavaScript state
+- Server-side logout via JTI blacklist — token is immediately invalidated on logout
+- Kite API credentials encrypted at rest with AES-256
+- No secrets committed to source control — environment variable injection only
+- HTTPS enforced in production via Traefik TLS termination
+
+---
 
 ## License
 
-The Full Stack FastAPI Template is licensed under the terms of the MIT license.
+Private repository. All rights reserved.
