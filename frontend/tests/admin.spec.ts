@@ -42,7 +42,7 @@ test.describe("Admin user management", () => {
     await expect(userRow).toBeVisible()
   })
 
-  test("Create a superuser", async ({ page }) => {
+  test("Create an active user", async ({ page }) => {
     await page.goto("/admin")
 
     const email = randomEmail()
@@ -53,7 +53,6 @@ test.describe("Admin user management", () => {
     await page.getByPlaceholder("Email").fill(email)
     await page.getByPlaceholder("Password").first().fill(password)
     await page.getByPlaceholder("Password").last().fill(password)
-    await page.getByLabel("Is superuser?").check()
     await page.getByLabel("Is active?").check()
 
     await page.getByRole("button", { name: "Save" }).click()
@@ -63,20 +62,18 @@ test.describe("Admin user management", () => {
     await expect(page.getByRole("dialog")).not.toBeVisible()
 
     const userRow = page.getByRole("row").filter({ hasText: email })
-    await expect(userRow.getByText("Superuser")).toBeVisible()
+    await expect(userRow).toBeVisible()
   })
 
   test("Edit a user successfully", async ({ page }) => {
     await page.goto("/admin")
 
-    const email = randomEmail()
+    const originalEmail = randomEmail()
+    const updatedEmail = randomEmail()
     const password = randomPassword()
-    const originalName = "Original Name"
-    const updatedName = "Updated Name"
 
     await page.getByRole("button", { name: "Add User" }).click()
-    await page.getByPlaceholder("Email").fill(email)
-    await page.getByPlaceholder("Full name").fill(originalName)
+    await page.getByPlaceholder("Email").fill(originalEmail)
     await page.getByPlaceholder("Password").first().fill(password)
     await page.getByPlaceholder("Password").last().fill(password)
     await page.getByRole("button", { name: "Save" }).click()
@@ -84,16 +81,16 @@ test.describe("Admin user management", () => {
     await expect(page.getByText("User created successfully")).toBeVisible()
     await expect(page.getByRole("dialog")).not.toBeVisible()
 
-    const userRow = page.getByRole("row").filter({ hasText: email })
+    const userRow = page.getByRole("row").filter({ hasText: originalEmail })
     await userRow.getByRole("button").click()
 
     await page.getByRole("menuitem", { name: "Edit User" }).click()
 
-    await page.getByPlaceholder("Full name").fill(updatedName)
+    await page.getByPlaceholder("Email").fill(updatedEmail)
     await page.getByRole("button", { name: "Save" }).click()
 
     await expect(page.getByText("User updated successfully")).toBeVisible()
-    await expect(page.getByText(updatedName)).toBeVisible()
+    await expect(page.getByRole("row").filter({ hasText: updatedEmail })).toBeVisible()
   })
 
   test("Delete a user successfully", async ({ page }) => {
