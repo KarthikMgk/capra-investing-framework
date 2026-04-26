@@ -1,6 +1,6 @@
 # Story 2.1: CSV Upload Backend
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -194,10 +194,31 @@ so that only structurally correct data reaches the database and invalid uploads 
 
 ### Agent Model Used
 
-_to be filled by dev agent_
-
-### Debug Log References
+claude-sonnet-4-6 (1M context)
 
 ### Completion Notes List
 
+- Router placed in `api/routes/upload.py` (not `api/v1/`) — matches project structure
+- Tests in `tests/` (not `app/tests/`) — matches project structure
+- `ScreenerData` model updated: old Story 1.2 columns (stock_symbol, pe_ratio, etc.) replaced with spec columns (symbol, name, pe, pb, revenue_growth, promoter_holding). Migration `c4d5e6f7a8b9` handles the transition.
+- `RBIMacroData` model updated: `date` column added (DateType alias used to avoid name collision with field named `date`)
+- `test_db_schema.py` updated to verify new column names
+- `CSVValidationError` already existed with compatible `(message, details)` signature — used as-is, no change needed
+- Validator is pure bytes→ValidationResult with no FastAPI/DB imports; passes all AC10 perf tests (<500ms for 5000 rows)
+- `pandas>=2.0` added to `pyproject.toml`
+
 ### File List
+
+- `backend/app/services/__init__.py` (new)
+- `backend/app/services/csv_validator.py` (new)
+- `backend/app/models/screener_data.py` (modified — new column schema)
+- `backend/app/models/rbi_macro_data.py` (modified — added date column)
+- `backend/app/alembic/versions/c4d5e6f7a8b9_update_screener_rbi_schema.py` (new)
+- `backend/app/schemas/upload.py` (new)
+- `backend/app/api/routes/upload.py` (new)
+- `backend/app/api/main.py` (modified — registered upload router)
+- `backend/app/main.py` (modified — added CSVValidationError handler)
+- `backend/pyproject.toml` (modified — added pandas)
+- `backend/tests/test_db_schema.py` (modified — updated column assertions)
+- `backend/tests/test_csv_validator.py` (new — 9 tests)
+- `backend/tests/test_api_upload.py` (new — 9 tests)

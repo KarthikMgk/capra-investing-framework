@@ -55,9 +55,9 @@ def test_ix_score_snapshots_stock_symbol(inspector):
 def test_screener_data_columns(inspector):
     cols = {c["name"] for c in inspector.get_columns("screener_data")}
     required = {
-        "id", "upload_batch_id", "stock_symbol", "uploaded_at",
-        "pe_ratio", "pb_ratio", "roe", "roce", "debt_to_equity",
-        "current_ratio", "sales_growth", "profit_growth", "eps", "dividend_yield",
+        "id", "upload_batch_id", "uploaded_at",
+        "symbol", "name", "pe", "pb", "eps", "roe",
+        "debt_to_equity", "revenue_growth", "promoter_holding",
     }
     assert required <= cols, f"Missing columns: {required - cols}"
 
@@ -66,7 +66,7 @@ def test_screener_data_columns(inspector):
 
 def test_rbi_macro_data_columns(inspector):
     cols = {c["name"] for c in inspector.get_columns("rbi_macro_data")}
-    required = {"id", "upload_batch_id", "uploaded_at", "repo_rate", "credit_growth", "liquidity_indicator"}
+    required = {"id", "upload_batch_id", "uploaded_at", "date", "repo_rate", "credit_growth", "liquidity_indicator"}
     assert required <= cols, f"Missing columns: {required - cols}"
 
 

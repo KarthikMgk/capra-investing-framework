@@ -12,7 +12,7 @@ from starlette.middleware.cors import CORSMiddleware
 from app.api.main import api_router
 from app.core.config import settings
 from app.core.db import engine, init_db
-from app.core.exceptions import AuthenticationError, AuthorizationError
+from app.core.exceptions import AuthenticationError, AuthorizationError, CSVValidationError
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -59,6 +59,14 @@ async def authorization_exception_handler(request: Request, exc: AuthorizationEr
     return JSONResponse(
         status_code=403,
         content={"error": {"code": exc.code, "message": exc.message, "details": exc.details}},
+    )
+
+
+@app.exception_handler(CSVValidationError)
+async def csv_validation_exception_handler(request: Request, exc: CSVValidationError) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={"error": {"code": "CSV_COLUMN_MISSING", "message": exc.message, "details": exc.details}},
     )
 
 
