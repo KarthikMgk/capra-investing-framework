@@ -7,15 +7,16 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { isLoggedIn } from "@/hooks/useAuth"
+import { currentUserQueryOptions } from "@/features/auth/useAuth"
+import { queryClient } from "@/shared/lib/queryClient"
 
 export const Route = createFileRoute("/_layout")({
   component: Layout,
   beforeLoad: async () => {
-    if (!isLoggedIn()) {
-      throw redirect({
-        to: "/login",
-      })
+    try {
+      await queryClient.ensureQueryData(currentUserQueryOptions)
+    } catch {
+      throw redirect({ to: "/login" })
     }
   },
 })
