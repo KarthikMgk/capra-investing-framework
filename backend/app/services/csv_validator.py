@@ -38,7 +38,7 @@ def _validate(file_bytes: bytes, required: list[str]) -> ValidationResult:
     except Exception:
         return ValidationResult(is_valid=False, missing_columns=required, found_columns=[])
 
-    found = list(df.columns)
+    found = [c.strip() for c in df.columns]
     missing = [col for col in required if col not in found]
     return ValidationResult(is_valid=len(missing) == 0, missing_columns=missing, found_columns=found)
 
