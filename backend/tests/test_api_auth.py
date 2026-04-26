@@ -181,3 +181,77 @@ def test_login_cleans_expired_revoked_tokens(client: TestClient, db: Session) ->
         select(RevokedToken).where(RevokedToken.jti == expired_jti)
     ).first()
     assert count_after is None
+
+
+# deps.py:42 — token with valid signature but no 'sub' field → 401
+def test_token_without_sub_is_rejected(client: TestClient) -> None:
+    import jwt as pyjwt
+
+    from app.core.security import ALGORITHM
+
+    no_sub_token = pyjwt.encode(
+        {"jti": str(uuid.uuid4()), "role": "viewer"},
+        settings.SECRET_KEY,
+        algorithm=ALGORITHM,
+    )
+    r = client.get(
+        f"{settings.API_V1_STR}/auth/me",
+        headers={"Cookie": f"access_token={no_sub_token}"},
+    )
+    assert r.status_code == 401
+
+
+# deps.py:46 — valid token but user deleted from DB → 401
+def test_token_for_deleted_user_is_rejected(client: TestClient, db: Session) -> None:
+    ghost_token = create_access_token(
+        subject=str(uuid.uuid4()),
+        jti=str(uuid.uuid4()),
+        role="viewer",
+        expires_delta=timedelta(hours=1),
+    )
+    r = client.get(
+        f"{settings.API_V1_STR}/auth/me",
+        headers={"Cookie": f"access_token={ghost_token}"},
+    )
+    assert r.status_code == 401
+    assert r.json()["error"]["code"] == "UNAUTHENTICATED"
+
+
+# deps.py:48 — inactive user cannot access endpoints → 401
+def test_inactive_user_is_rejected(client: TestClient, db: Session) -> None:
+    user = crud.create_user(
+        session=db,
+        user_create=UserCreate(
+            email="inactive_test@example.com", password="password12345", role="viewer"
+        ),
+    )
+    r_login = client.post(
+        f"{settings.API_V1_STR}/auth/login",
+        json={"email": "inactive_test@example.com", "password": "password12345"},
+    )
+    token = r_login.cookies.get("access_token")
+
+    user.is_active = False
+    db.add(user)
+    db.commit()
+
+    r = client.get(
+        f"{settings.API_V1_STR}/auth/me",
+        headers={"Cookie": f"access_token={token}"},
+    )
+
+    db.delete(user)
+    db.commit()
+
+    assert r.status_code == 401
+    assert r.json()["error"]["code"] == "UNAUTHENTICATED"
+
+
+# auth.py:67-68 — logout with a garbage token swallows the error and clears cookie
+def test_logout_with_invalid_token_still_clears_cookie(client: TestClient) -> None:
+    r = client.post(
+        f"{settings.API_V1_STR}/auth/logout",
+        headers={"Cookie": "access_token=this-is-not-a-valid-jwt"},
+    )
+    assert r.status_code == 200
+    assert r.json() == {"status": "ok"}

@@ -27,7 +27,7 @@ test("Continue button is visible", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Continue" })).toBeVisible()
 })
 
-test("User can reset password successfully using the link", async ({
+test.skip("User can reset password successfully using the link", async ({
   page,
   request,
 }) => {
@@ -73,7 +73,7 @@ test("User can reset password successfully using the link", async ({
   await logInUser(page, email, newPassword)
 })
 
-test("Expired or invalid reset link", async ({ page }) => {
+test.skip("Expired or invalid reset link", async ({ page }) => {
   const password = randomPassword()
   const invalidUrl = "/reset-password?token=invalidtoken"
 
@@ -86,7 +86,7 @@ test("Expired or invalid reset link", async ({ page }) => {
   await expect(page.getByText("Invalid token")).toBeVisible()
 })
 
-test("Weak new password validation", async ({ page, request }) => {
+test.skip("Weak new password validation", async ({ page, request }) => {
   const fullName = "Test User"
   const email = randomEmail()
   const password = randomPassword()

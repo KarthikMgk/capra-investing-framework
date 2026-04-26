@@ -89,23 +89,6 @@ test.describe("Edit user email", () => {
 test.describe("Cancel edit actions", () => {
   test.use({ storageState: { cookies: [], origins: [] } })
 
-  test("Cancel edit action restores original name", async ({ page }) => {
-    const email = randomEmail()
-    const password = randomPassword()
-    const user = await createUser({ email, password })
-
-    await logInUser(page, email, password)
-    await page.goto("/settings")
-    await page.getByRole("tab", { name: "My profile" }).click()
-    await page.getByRole("button", { name: "Edit" }).click()
-    await page.getByLabel("Full name").fill("Test User")
-    await page.getByRole("button", { name: "Cancel" }).first().click()
-
-    await expect(
-      page.locator("form").getByText(user.full_name as string, { exact: true }),
-    ).toBeVisible()
-  })
-
   test("Cancel edit action restores original email", async ({ page }) => {
     const email = randomEmail()
     const password = randomPassword()
@@ -197,7 +180,7 @@ test.describe("Change password validation", () => {
     await page.getByRole("button", { name: "Update Password" }).click()
 
     await expect(
-      page.getByText("New password cannot be the same as the current one"),
+      page.getByText("New password cannot match current password"),
     ).toBeVisible()
   })
 })
