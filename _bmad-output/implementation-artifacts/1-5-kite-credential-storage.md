@@ -1,6 +1,6 @@
 # Story 1.5: Kite Credential Storage
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -154,10 +154,33 @@ so that the system can authenticate with Kite Connect on my behalf without ever 
 
 ### Agent Model Used
 
-_to be filled by dev agent_
-
-### Debug Log References
+claude-sonnet-4-6 (1M context)
 
 ### Completion Notes List
 
+- Router placed in `backend/app/api/routes/settings.py` (no `api/v1/` dir exists; mirrors auth/users pattern)
+- `ENCRYPTION_KEY` added to `.env` as valid 32-byte base64 key; `.env.example` updated with generation instructions; `KITE_ENCRYPTION_KEY` removed from `.env.example`
+- Alembic migration written manually (`a1b2c3d4e5f6`) — no running DB locally; applies on next `alembic upgrade head`
+- `cryptography` added explicitly to `pyproject.toml` (was transitive only)
+- `base64.urlsafe_b64decode(key + "==")` padding ensures correct decoding regardless of trailing `=` count
+- Frontend route at `src/routes/_layout/admin.settings.tsx` (dot-notation → URL `/admin/settings`)
+- `routeTree.gen.ts` manually updated — will be regenerated automatically on next `vite dev`
+- 0 TypeScript errors, 4/4 vitest tests pass, encrypt/decrypt round-trip verified in Python
+
 ### File List
+
+- `backend/app/core/config.py` (modified — added `ENCRYPTION_KEY`)
+- `backend/app/core/encryption.py` (new)
+- `backend/app/models/kite_settings.py` (new)
+- `backend/app/models/__init__.py` (modified — added KiteSettings import)
+- `backend/app/alembic/versions/a1b2c3d4e5f6_add_kite_settings_table.py` (new)
+- `backend/app/schemas/settings.py` (new)
+- `backend/app/api/routes/settings.py` (new)
+- `backend/app/api/main.py` (modified — registered settings router)
+- `backend/pyproject.toml` (modified — added cryptography dep)
+- `backend/tests/test_api_settings.py` (new — 5 tests)
+- `.env.example` (modified)
+- `.env` (modified — added ENCRYPTION_KEY)
+- `frontend/src/features/admin/AdminSettings.tsx` (new)
+- `frontend/src/routes/_layout/admin.settings.tsx` (new)
+- `frontend/src/routeTree.gen.ts` (modified — added admin.settings route)

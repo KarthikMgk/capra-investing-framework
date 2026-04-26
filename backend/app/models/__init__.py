@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel  # noqa: F401 — re-exported for alembic env.py
 
+from app.models.kite_settings import KiteSettings  # noqa: F401
 from app.models.rbi_macro_data import RBIMacroData  # noqa: F401
 from app.models.revoked_token import RevokedToken  # noqa: F401
 from app.models.score_snapshot import ScoreSnapshot  # noqa: F401
