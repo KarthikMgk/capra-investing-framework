@@ -1,6 +1,6 @@
 # Story 1.4: Authentication Frontend
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -173,10 +173,36 @@ so that only authenticated users can access the app and only admins can reach ad
 
 ### Agent Model Used
 
-_to be filled by dev agent_
-
-### Debug Log References
+claude-sonnet-4-6 (1M context)
 
 ### Completion Notes List
 
+- Used TanStack Router (file-based routing) instead of React Router — matched existing template conventions
+- `features/auth/useAuth.ts` is the primary auth hook; `hooks/useAuth.ts` re-exports it for backward compat
+- `isLoggedIn()` stub exported as `() => false` to keep template routes (signup, recover-password, reset-password) compiling without changes
+- `OpenAPI.WITH_CREDENTIALS = true` set in main.tsx so auto-generated client sends cookies alongside new apiClient
+- `_layout.tsx` beforeLoad uses `queryClient.ensureQueryData(currentUserQueryOptions)` — redirects on any error
+- `_layout/admin.tsx` beforeLoad checks `user.role === "admin"` (was `is_superuser`)
+- Skipped ProtectedRoute/AdminRoute components (spec was React Router; TanStack Router uses beforeLoad instead)
+- Login form updated from `username` → `email` field to match backend `LoginRequest`
+- Tests co-located at `features/auth/LoginPage.test.tsx` — explicit `afterEach(cleanup)` needed (Vitest lacks globals)
+
 ### File List
+
+- `frontend/src/shared/types/user.ts` (new)
+- `frontend/src/shared/types/api.ts` (new)
+- `frontend/src/shared/lib/apiClient.ts` (new)
+- `frontend/src/shared/lib/queryClient.ts` (new)
+- `frontend/src/shared/components/LoadingSpinner.tsx` (new)
+- `frontend/src/shared/components/ErrorMessage.tsx` (new)
+- `frontend/src/shared/hooks/useCurrentUser.ts` (new)
+- `frontend/src/features/auth/useAuth.ts` (new — primary)
+- `frontend/src/features/auth/LoginPage.tsx` (new)
+- `frontend/src/features/auth/LoginPage.test.tsx` (new)
+- `frontend/src/hooks/useAuth.ts` (modified — re-export)
+- `frontend/src/main.tsx` (modified)
+- `frontend/src/routes/_layout.tsx` (modified)
+- `frontend/src/routes/login.tsx` (modified — thin wrapper)
+- `frontend/src/routes/_layout/admin.tsx` (modified)
+- `frontend/src/components/Sidebar/AppSidebar.tsx` (modified)
+- `frontend/src/routes/_layout/settings.tsx` (modified)

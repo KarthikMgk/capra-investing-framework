@@ -7,7 +7,10 @@ import AddUser from "@/components/Admin/AddUser"
 import { columns, type UserTableData } from "@/components/Admin/columns"
 import { DataTable } from "@/components/Common/DataTable"
 import PendingUsers from "@/components/Pending/PendingUsers"
+import { currentUserQueryOptions } from "@/features/auth/useAuth"
 import useAuth from "@/hooks/useAuth"
+import { queryClient } from "@/shared/lib/queryClient"
+import type { User } from "@/shared/types/user"
 
 function getUsersQueryOptions() {
   return {
@@ -19,11 +22,15 @@ function getUsersQueryOptions() {
 export const Route = createFileRoute("/_layout/admin")({
   component: Admin,
   beforeLoad: async () => {
-    const user = await UsersService.readUserMe()
-    if (!user.is_superuser) {
-      throw redirect({
-        to: "/",
-      })
+    const user = queryClient.getQueryData<User>(currentUserQueryOptions.queryKey)
+    if (!user) {
+      await queryClient.ensureQueryData(currentUserQueryOptions)
+    }
+    const currentUser = queryClient.getQueryData<User>(
+      currentUserQueryOptions.queryKey,
+    )
+    if (!currentUser || currentUser.role !== "admin") {
+      throw redirect({ to: "/" })
     }
   },
   head: () => ({
