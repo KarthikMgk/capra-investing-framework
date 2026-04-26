@@ -1,6 +1,6 @@
 # Story 3.2: Kite Connect Client
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -179,10 +179,22 @@ Files to **leave untouched** in this story:
 
 ### Agent Model Used
 
-_to be filled by dev agent_
-
-### Debug Log References
+claude-sonnet-4-6 (1M context)
 
 ### Completion Notes List
 
+- kiteconnect 5.2.0 installed (not 4.x as spec assumed — 5.x is latest stable)
+- `_instrument_cache` is module-level dict (shared across KiteClient instances within a process) to avoid repeated `kite.instruments()` calls
+- NSE symbols are prefixed with `NSE:` before calling `kite.quote()` if not already prefixed
+- `get_nifty_index_prices` uses `segment="INDICES"` filter when looking up instrument token
+- `MockKiteClient.__init__` bypasses parent entirely — sets `self.kite = None`
+- `mock_kite_client` fixture added to `tests/conftest.py` alongside existing fixtures
+- 13/13 tests pass, 72/72 full suite passes
+
 ### File List
+
+- `backend/app/services/kite_client.py` (new)
+- `backend/app/schemas/portfolio.py` (new)
+- `backend/pyproject.toml` (modified — added kiteconnect>=4.0.0)
+- `backend/tests/conftest.py` (modified — added MockKiteClient and mock_kite_client fixture)
+- `backend/tests/test_kite_client.py` (new — 13 tests)
