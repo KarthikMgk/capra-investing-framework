@@ -15,8 +15,10 @@ import { Route as RecoverPasswordRouteImport } from './routes/recover-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as LayoutUploadRouteImport } from './routes/_layout/upload'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as LayoutAdminSettingsRouteImport } from './routes/_layout/admin.settings'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -47,6 +49,11 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutUploadRoute = LayoutUploadRouteImport.update({
+  id: '/upload',
+  path: '/upload',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -57,6 +64,11 @@ const LayoutAdminRoute = LayoutAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutAdminSettingsRoute = LayoutAdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => LayoutAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
@@ -64,17 +76,21 @@ export interface FileRoutesByFullPath {
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/admin': typeof LayoutAdminRoute
+  '/admin': typeof LayoutAdminRouteWithChildren
   '/settings': typeof LayoutSettingsRoute
+  '/upload': typeof LayoutUploadRoute
+  '/admin/settings': typeof LayoutAdminSettingsRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/admin': typeof LayoutAdminRoute
+  '/admin': typeof LayoutAdminRouteWithChildren
   '/settings': typeof LayoutSettingsRoute
+  '/upload': typeof LayoutUploadRoute
   '/': typeof LayoutIndexRoute
+  '/admin/settings': typeof LayoutAdminSettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -83,9 +99,11 @@ export interface FileRoutesById {
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/_layout/admin': typeof LayoutAdminRoute
+  '/_layout/admin': typeof LayoutAdminRouteWithChildren
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/upload': typeof LayoutUploadRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/_layout/admin/settings': typeof LayoutAdminSettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -97,6 +115,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/settings'
+    | '/upload'
+    | '/admin/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -105,7 +125,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/settings'
+    | '/upload'
     | '/'
+    | '/admin/settings'
   id:
     | '__root__'
     | '/_layout'
@@ -115,7 +137,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_layout/admin'
     | '/_layout/settings'
+    | '/_layout/upload'
     | '/_layout/'
+    | '/_layout/admin/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -170,6 +194,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/upload': {
+      id: '/_layout/upload'
+      path: '/upload'
+      fullPath: '/upload'
+      preLoaderRoute: typeof LayoutUploadRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/settings': {
       id: '/_layout/settings'
       path: '/settings'
@@ -184,18 +215,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/admin/settings': {
+      id: '/_layout/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof LayoutAdminSettingsRouteImport
+      parentRoute: typeof LayoutAdminRoute
+    }
   }
 }
 
+interface LayoutAdminRouteChildren {
+  LayoutAdminSettingsRoute: typeof LayoutAdminSettingsRoute
+}
+
+const LayoutAdminRouteChildren: LayoutAdminRouteChildren = {
+  LayoutAdminSettingsRoute: LayoutAdminSettingsRoute,
+}
+
+const LayoutAdminRouteWithChildren = LayoutAdminRoute._addFileChildren(
+  LayoutAdminRouteChildren,
+)
+
 interface LayoutRouteChildren {
-  LayoutAdminRoute: typeof LayoutAdminRoute
+  LayoutAdminRoute: typeof LayoutAdminRouteWithChildren
   LayoutSettingsRoute: typeof LayoutSettingsRoute
+  LayoutUploadRoute: typeof LayoutUploadRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutAdminRoute: LayoutAdminRoute,
+  LayoutAdminRoute: LayoutAdminRouteWithChildren,
   LayoutSettingsRoute: LayoutSettingsRoute,
+  LayoutUploadRoute: LayoutUploadRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 
