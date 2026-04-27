@@ -46,11 +46,25 @@ const PENDING: SignalConfig = {
     "bg-zinc-50 text-zinc-400 border border-dashed border-zinc-300 dark:bg-zinc-900 dark:border-zinc-700",
 }
 
-interface Props {
-  signal: Signal
+const NOT_TRACKED: SignalConfig = {
+  label: "Non-index",
+  indicator: "—",
+  className:
+    "bg-zinc-50 text-zinc-300 border border-zinc-200 dark:bg-zinc-900 dark:text-zinc-600 dark:border-zinc-800",
 }
 
-export function SignalBadge({ signal }: Props) {
+interface Props {
+  signal: Signal
+  inUniverse?: boolean
+}
+
+export function SignalBadge({ signal, inUniverse = true }: Props) {
+  if (!inUniverse) return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium tabular-nums tracking-wide ${NOT_TRACKED.className}`}>
+      <span className="text-[10px] leading-none">{NOT_TRACKED.indicator}</span>
+      {NOT_TRACKED.label}
+    </span>
+  )
   const config = (signal && SIGNAL_MAP[signal]) ?? PENDING
 
   return (

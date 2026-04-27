@@ -8,6 +8,7 @@ export interface HoldingWithSignal {
   last_price: number
   signal: "strong_buy" | "buy" | "hold" | "sell" | "strong_sell" | null
   signal_color: string | null
+  in_universe: boolean
 }
 
 export interface PortfolioResponse {

@@ -112,7 +112,7 @@ function HoldingRow({ holding }: { holding: HoldingWithSignal }) {
         })}
       </TableCell>
       <TableCell className="text-right">
-        <SignalBadge signal={holding.signal} />
+        <SignalBadge signal={holding.signal} inUniverse={holding.in_universe} />
       </TableCell>
     </TableRow>
   )

@@ -20,6 +20,7 @@ class HoldingWithSignal(BaseModel):
     last_price: float
     signal: str | None = None
     signal_color: str | None = None
+    in_universe: bool = True  # False for non-Nifty 50 holdings
 
 
 class PortfolioResponse(BaseModel):

@@ -2,9 +2,12 @@ from fastapi import APIRouter
 from sqlmodel import select
 
 from app.api.deps import CurrentUser, SessionDep
+from app.core.constants import NIFTY_50_SYMBOLS
 from app.models.score_snapshot import ScoreSnapshot
 from app.schemas.portfolio import HoldingWithSignal, PortfolioResponse
 from app.services.kite_client import KiteClient
+
+_NIFTY_50_SET = set(NIFTY_50_SYMBOLS)
 
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
 
@@ -31,6 +34,7 @@ def get_portfolio(session: SessionDep, _current_user: CurrentUser) -> PortfolioR
             .limit(1)
         ).first()
 
+        in_universe = holding.tradingsymbol in _NIFTY_50_SET
         signal = snapshot.signal if snapshot else None
 
         items.append(
@@ -41,6 +45,7 @@ def get_portfolio(session: SessionDep, _current_user: CurrentUser) -> PortfolioR
                 last_price=holding.last_price,
                 signal=signal,
                 signal_color=_SIGNAL_COLOR.get(signal) if signal else None,
+                in_universe=in_universe,
             )
         )
 
