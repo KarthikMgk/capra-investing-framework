@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, redirect } from "@tanstack/react-router"
+import { createFileRoute, Outlet, redirect, useMatches } from "@tanstack/react-router"
 import { Suspense } from "react"
 
 import { type UserPublic, UsersService } from "@/client"
@@ -63,6 +63,15 @@ function UsersTable() {
 }
 
 function Admin() {
+  const matches = useMatches()
+  const isChildRoute = matches.some((m) =>
+    m.routeId.startsWith("/_layout/admin/"),
+  )
+
+  if (isChildRoute) {
+    return <Outlet />
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
