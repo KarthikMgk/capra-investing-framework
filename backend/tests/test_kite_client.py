@@ -141,3 +141,56 @@ def test_kite_api_error_is_not_raw_kiteconnect_exception() -> None:
         pass
     except Exception as e:
         pytest.fail(f"Raw exception leaked: {type(e)}")
+
+
+# ── Cross-asset data methods ──────────────────────────────────────────────────
+
+def test_get_usdinr_prices_returns_series(mock_kite_client: MockKiteClient) -> None:
+    prices = mock_kite_client.get_usdinr_prices(180)
+    assert len(prices) == 180
+    assert all(isinstance(p, float) for p in prices)
+    assert prices[0] == pytest.approx(83.0)
+
+
+def test_get_usdinr_prices_increases_over_series(mock_kite_client: MockKiteClient) -> None:
+    prices = mock_kite_client.get_usdinr_prices(10)
+    assert prices[-1] > prices[0]
+
+
+def test_get_gold_prices_returns_series(mock_kite_client: MockKiteClient) -> None:
+    prices = mock_kite_client.get_gold_prices(180)
+    assert len(prices) == 180
+    assert all(isinstance(p, float) for p in prices)
+    assert prices[0] == pytest.approx(5500.0)
+
+
+def test_get_gold_prices_different_from_nifty(mock_kite_client: MockKiteClient) -> None:
+    gold = mock_kite_client.get_gold_prices(30)
+    nifty = mock_kite_client.get_nifty_index_prices(30)
+    assert gold[0] != nifty[0]
+
+
+def test_get_sector_prices_returns_series(mock_kite_client: MockKiteClient) -> None:
+    prices = mock_kite_client.get_sector_prices("NIFTY BANK", 180)
+    assert len(prices) == 180
+    assert all(isinstance(p, float) for p in prices)
+
+
+def test_get_sector_prices_accepts_any_sector_name(mock_kite_client: MockKiteClient) -> None:
+    for sector in ["NIFTY BANK", "NIFTY IT", "NIFTY PHARMA", "NIFTY AUTO"]:
+        prices = mock_kite_client.get_sector_prices(sector, 30)
+        assert len(prices) == 30
+
+
+def test_stock_sector_index_covers_all_nifty50() -> None:
+    from app.core.constants import NIFTY_50_SYMBOLS, STOCK_SECTOR_INDEX
+    missing = [s for s in NIFTY_50_SYMBOLS if s not in STOCK_SECTOR_INDEX]
+    assert not missing, f"Stocks missing sector mapping: {missing}"
+
+
+def test_stock_sector_index_values_are_nonempty_strings() -> None:
+    from app.core.constants import STOCK_SECTOR_INDEX
+    for symbol, sector in STOCK_SECTOR_INDEX.items():
+        assert isinstance(sector, str) and sector.strip(), (
+            f"Blank sector for {symbol}"
+        )

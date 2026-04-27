@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 from kiteconnect import KiteConnect
 from sqlmodel import Session, select
 
+from app.core.constants import GOLD_INSTRUMENT, USDINR_SEGMENT, USDINR_SYMBOL
 from app.core.encryption import decrypt
 from app.core.exceptions import KiteAPIError
 from app.models.kite_settings import KiteSettings
@@ -127,7 +128,63 @@ class KiteClient:
             logger.error("KiteClient.get_nifty_index_prices failed: %s", e, exc_info=True)
             raise KiteAPIError(f"Failed to fetch Nifty 50 index prices: {e}") from e
 
+    def get_usdinr_prices(self, days: int) -> list[float]:
+        """
+        Fetch USD/INR historical prices for the usd_lens factor.
+        Uses the NSE Currency Derivatives Segment (CDS) — requires CDS
+        access to be activated on the Kite account.
+        """
+        try:
+            token = self._get_instrument_token(USDINR_SYMBOL, segment=USDINR_SEGMENT)
+            to_date = dt.now(tz=IST).date()
+            from_date = to_date - timedelta(days=days)
+            raw = self.kite.historical_data(token, from_date, to_date, "day")
+            if not raw:
+                raise KiteAPIError("No USDINR historical data returned")
+            return [float(candle["close"]) for candle in raw]
+        except KiteAPIError:
+            raise
+        except Exception as e:
+            logger.error("KiteClient.get_usdinr_prices failed: %s", e, exc_info=True)
+            raise KiteAPIError(f"Failed to fetch USDINR prices: {e}") from e
+
+    def get_gold_prices(self, days: int) -> list[float]:
+        """
+        Fetch Gold historical prices via GOLDBEES ETF on NSE.
+        GOLDBEES tracks physical gold in INR — no expiry roll complexity.
+        """
+        return self.get_historical_prices(GOLD_INSTRUMENT, days)
+
+    def get_sector_prices(self, sector_index: str, days: int) -> list[float]:
+        """
+        Fetch historical prices for an NSE sector index.
+        sector_index: exact tradingsymbol as in Kite instruments list,
+                      e.g. "NIFTY BANK", "NIFTY IT", "NIFTY PHARMA".
+        """
+        try:
+            token = self._get_instrument_token(sector_index, segment="INDICES")
+            to_date = dt.now(tz=IST).date()
+            from_date = to_date - timedelta(days=days)
+            raw = self.kite.historical_data(token, from_date, to_date, "day")
+            if not raw:
+                raise KiteAPIError(f"No historical data returned for sector index '{sector_index}'")
+            return [float(candle["close"]) for candle in raw]
+        except KiteAPIError:
+            raise
+        except Exception as e:
+            logger.error("KiteClient.get_sector_prices failed for %s: %s", sector_index, e, exc_info=True)
+            raise KiteAPIError(f"Failed to fetch sector prices for '{sector_index}': {e}") from e
+
     # ── Instrument token lookup ───────────────────────────────────────────────
+
+    # Maps segment → Kite exchange name for instruments() API call.
+    # INDICES are listed under the "NSE" exchange; CDS has its own exchange.
+    _SEGMENT_TO_EXCHANGE: dict[str, str] = {
+        "NSE":     "NSE",
+        "INDICES": "NSE",   # sector/market indices live in the NSE instrument dump
+        "CDS":     "CDS",   # currency derivatives (USDINR, EURINR, etc.)
+        "MCX":     "MCX",
+    }
 
     def _get_instrument_token(self, symbol: str, segment: str = "NSE") -> int:
         global _instrument_cache
@@ -135,7 +192,8 @@ class KiteClient:
         if cache_key in _instrument_cache:
             return _instrument_cache[cache_key]
 
-        instruments = self.kite.instruments("NSE")
+        exchange = self._SEGMENT_TO_EXCHANGE.get(segment, "NSE")
+        instruments = self.kite.instruments(exchange)
         for inst in instruments:
             seg = inst.get("segment", "")
             ts = inst.get("tradingsymbol", "")
@@ -144,4 +202,7 @@ class KiteClient:
                 _instrument_cache[cache_key] = token
                 return token
 
-        raise KiteAPIError(f"Instrument token not found for {symbol} in segment {segment}")
+        raise KiteAPIError(
+            f"Instrument token not found for '{symbol}' in segment '{segment}' "
+            f"(searched exchange '{exchange}')"
+        )

@@ -130,3 +130,82 @@ VOLATILITY_ADJUSTMENT: list[tuple[float, float, float]] = [
 # compute_time_stop returns the count; action threshold is the caller's decision.
 
 MEANINGFUL_MOVEMENT_THRESHOLD: float = 0.05  # 5% monthly change (MVP default)
+
+# ── Cross-asset instruments (now wired) ───────────────────────────────────────
+
+# Gold price proxy — GOLDBEES ETF on NSE tracks physical gold in INR.
+# Simpler than MCX futures: no expiry roll, regular NSE equity history.
+GOLD_INSTRUMENT: str = "GOLDBEES"
+
+# USDINR spot — NSE Currency Derivatives Segment (CDS).
+# Requires CDS segment access on Kite account (must be activated separately).
+USDINR_SYMBOL: str = "USDINR"
+USDINR_SEGMENT: str = "CDS"
+
+# ── Stock → Sector index mapping (sector_strength factor) ────────────────────
+# Maps each Nifty 50 symbol to its primary NSE sector index tradingsymbol
+# (as returned by kite.instruments("NSE") with segment="INDICES").
+
+STOCK_SECTOR_INDEX: dict[str, str] = {
+    # Banking
+    "HDFCBANK":   "NIFTY BANK",
+    "ICICIBANK":  "NIFTY BANK",
+    "KOTAKBANK":  "NIFTY BANK",
+    "AXISBANK":   "NIFTY BANK",
+    "SBIN":       "NIFTY PSU BANK",
+    "INDUSINDBK": "NIFTY BANK",
+    # Financial Services
+    "BAJFINANCE":  "NIFTY FINANCIAL SERVICES",
+    "BAJAJFINSV":  "NIFTY FINANCIAL SERVICES",
+    "HDFCLIFE":    "NIFTY FINANCIAL SERVICES",
+    "SBILIFE":     "NIFTY FINANCIAL SERVICES",
+    "SHRIRAMFIN":  "NIFTY FINANCIAL SERVICES",
+    # Information Technology
+    "TCS":    "NIFTY IT",
+    "INFY":   "NIFTY IT",
+    "HCLTECH":"NIFTY IT",
+    "WIPRO":  "NIFTY IT",
+    "TECHM":  "NIFTY IT",
+    "LTIM":   "NIFTY IT",
+    # Automobiles
+    "MARUTI":    "NIFTY AUTO",
+    "TATAMOTORS":"NIFTY AUTO",
+    "M&M":       "NIFTY AUTO",
+    "BAJAJ-AUTO":"NIFTY AUTO",
+    "HEROMOTOCO":"NIFTY AUTO",
+    "EICHERMOT": "NIFTY AUTO",
+    # FMCG
+    "HINDUNILVR": "NIFTY FMCG",
+    "ITC":        "NIFTY FMCG",
+    "BRITANNIA":  "NIFTY FMCG",
+    "NESTLEIND":  "NIFTY FMCG",
+    "TATACONSUM": "NIFTY FMCG",
+    # Pharma / Healthcare
+    "SUNPHARMA": "NIFTY PHARMA",
+    "DRREDDY":   "NIFTY PHARMA",
+    "CIPLA":     "NIFTY PHARMA",
+    "DIVISLAB":  "NIFTY PHARMA",
+    "APOLLOHOSP":"NIFTY HEALTHCARE",
+    # Metals
+    "TATASTEEL": "NIFTY METAL",
+    "JSWSTEEL":  "NIFTY METAL",
+    "HINDALCO":  "NIFTY METAL",
+    "COALINDIA": "NIFTY METAL",
+    # Energy & Oil
+    "RELIANCE": "NIFTY ENERGY",
+    "ONGC":     "NIFTY OIL AND GAS",
+    "BPCL":     "NIFTY OIL AND GAS",
+    "NTPC":     "NIFTY ENERGY",
+    "POWERGRID":"NIFTY INFRA",
+    "ADANIENT": "NIFTY ENERGY",
+    # Infrastructure & Conglomerates
+    "LT":        "NIFTY INFRA",
+    "ADANIPORTS":"NIFTY INFRA",
+    "GRASIM":    "NIFTY INFRA",
+    "ULTRACEMCO":"NIFTY INFRA",
+    # Consumer Durables / Others
+    "TITAN":     "NIFTY CONSUMER DURABLES",
+    "ASIANPAINT":"NIFTY CONSUMER DURABLES",
+    # Telecom (NSE classifies under Media & Entertainment index)
+    "BHARTIARTL":"NIFTY MEDIA",
+}

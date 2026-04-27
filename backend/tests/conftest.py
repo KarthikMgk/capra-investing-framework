@@ -74,6 +74,18 @@ class MockKiteClient(KiteClient):
     def get_nifty_index_prices(self, days: int) -> list[float]:
         return [18000.0 + 10.0 * i for i in range(days)]
 
+    def get_usdinr_prices(self, days: int) -> list[float]:
+        # Synthetic USD/INR series around 83–84
+        return [83.0 + 0.01 * i for i in range(days)]
+
+    def get_gold_prices(self, days: int) -> list[float]:
+        # Synthetic GOLDBEES ETF series (approx ₹55–60 per unit)
+        return [5500.0 + 5.0 * i for i in range(days)]
+
+    def get_sector_prices(self, sector_index: str, days: int) -> list[float]:
+        # Generic sector index series; caller supplies the sector name
+        return [15000.0 + 8.0 * i for i in range(days)]
+
 
 @pytest.fixture
 def mock_kite_client() -> MockKiteClient:
