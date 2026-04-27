@@ -16,8 +16,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutUploadRouteImport } from './routes/_layout/upload'
+import { Route as LayoutStockRouteImport } from './routes/_layout/stock'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as LayoutStockSymbolRouteImport } from './routes/_layout/stock.$symbol'
 import { Route as LayoutAdminSettingsRouteImport } from './routes/_layout/admin.settings'
 
 const SignupRoute = SignupRouteImport.update({
@@ -54,6 +56,11 @@ const LayoutUploadRoute = LayoutUploadRouteImport.update({
   path: '/upload',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutStockRoute = LayoutStockRouteImport.update({
+  id: '/stock',
+  path: '/stock',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -63,6 +70,11 @@ const LayoutAdminRoute = LayoutAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutStockSymbolRoute = LayoutStockSymbolRouteImport.update({
+  id: '/$symbol',
+  path: '/$symbol',
+  getParentRoute: () => LayoutStockRoute,
 } as any)
 const LayoutAdminSettingsRoute = LayoutAdminSettingsRouteImport.update({
   id: '/settings',
@@ -78,8 +90,10 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRouteWithChildren
   '/settings': typeof LayoutSettingsRoute
+  '/stock': typeof LayoutStockRouteWithChildren
   '/upload': typeof LayoutUploadRoute
   '/admin/settings': typeof LayoutAdminSettingsRoute
+  '/stock/$symbol': typeof LayoutStockSymbolRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -88,9 +102,11 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRouteWithChildren
   '/settings': typeof LayoutSettingsRoute
+  '/stock': typeof LayoutStockRouteWithChildren
   '/upload': typeof LayoutUploadRoute
   '/': typeof LayoutIndexRoute
   '/admin/settings': typeof LayoutAdminSettingsRoute
+  '/stock/$symbol': typeof LayoutStockSymbolRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -101,9 +117,11 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRouteWithChildren
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/stock': typeof LayoutStockRouteWithChildren
   '/_layout/upload': typeof LayoutUploadRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/admin/settings': typeof LayoutAdminSettingsRoute
+  '/_layout/stock/$symbol': typeof LayoutStockSymbolRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -115,8 +133,10 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/settings'
+    | '/stock'
     | '/upload'
     | '/admin/settings'
+    | '/stock/$symbol'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -125,9 +145,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/settings'
+    | '/stock'
     | '/upload'
     | '/'
     | '/admin/settings'
+    | '/stock/$symbol'
   id:
     | '__root__'
     | '/_layout'
@@ -137,9 +159,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_layout/admin'
     | '/_layout/settings'
+    | '/_layout/stock'
     | '/_layout/upload'
     | '/_layout/'
     | '/_layout/admin/settings'
+    | '/_layout/stock/$symbol'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -201,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutUploadRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/stock': {
+      id: '/_layout/stock'
+      path: '/stock'
+      fullPath: '/stock'
+      preLoaderRoute: typeof LayoutStockRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/settings': {
       id: '/_layout/settings'
       path: '/settings'
@@ -214,6 +245,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
+    }
+    '/_layout/stock/$symbol': {
+      id: '/_layout/stock/$symbol'
+      path: '/$symbol'
+      fullPath: '/stock/$symbol'
+      preLoaderRoute: typeof LayoutStockSymbolRouteImport
+      parentRoute: typeof LayoutStockRoute
     }
     '/_layout/admin/settings': {
       id: '/_layout/admin/settings'
@@ -237,9 +275,22 @@ const LayoutAdminRouteWithChildren = LayoutAdminRoute._addFileChildren(
   LayoutAdminRouteChildren,
 )
 
+interface LayoutStockRouteChildren {
+  LayoutStockSymbolRoute: typeof LayoutStockSymbolRoute
+}
+
+const LayoutStockRouteChildren: LayoutStockRouteChildren = {
+  LayoutStockSymbolRoute: LayoutStockSymbolRoute,
+}
+
+const LayoutStockRouteWithChildren = LayoutStockRoute._addFileChildren(
+  LayoutStockRouteChildren,
+)
+
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRouteWithChildren
   LayoutSettingsRoute: typeof LayoutSettingsRoute
+  LayoutStockRoute: typeof LayoutStockRouteWithChildren
   LayoutUploadRoute: typeof LayoutUploadRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
@@ -247,6 +298,7 @@ interface LayoutRouteChildren {
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRouteWithChildren,
   LayoutSettingsRoute: LayoutSettingsRoute,
+  LayoutStockRoute: LayoutStockRouteWithChildren,
   LayoutUploadRoute: LayoutUploadRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }

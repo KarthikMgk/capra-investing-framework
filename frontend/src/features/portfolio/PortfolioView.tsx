@@ -94,7 +94,7 @@ function HoldingRow({ holding }: { holding: HoldingWithSignal }) {
   return (
     <TableRow
       className="cursor-pointer transition-colors hover:bg-muted/50"
-      onClick={() => navigate({ to: `/stock/${holding.tradingsymbol}` as never })}
+      onClick={() => navigate({ to: "/stock/$symbol", params: { symbol: holding.tradingsymbol } })}
     >
       <TableCell className="font-mono font-semibold tracking-wide text-foreground">
         {holding.tradingsymbol}

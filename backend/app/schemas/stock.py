@@ -1,6 +1,17 @@
 from pydantic import BaseModel
 
 
+class StockListItem(BaseModel):
+    stock_symbol: str
+    name: str
+    signal: str | None = None
+
+
+class StockListResponse(BaseModel):
+    items: list[StockListItem]
+    total: int
+
+
 class FactorItem(BaseModel):
     name: str
     weight: float
