@@ -53,6 +53,12 @@ def get_current_user(request: Request, session: SessionDep) -> User:
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+def get_kite_client(session: SessionDep) -> "KiteClient":
+    """Dependency that constructs a KiteClient — override in tests with mock."""
+    from app.services.kite_client import KiteClient
+    return KiteClient(session)
+
+
 def require_admin(current_user: CurrentUser) -> User:
     if current_user.role != "admin":
         raise AuthorizationError("Admin access required")

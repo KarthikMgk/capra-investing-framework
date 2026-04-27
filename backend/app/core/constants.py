@@ -131,6 +131,24 @@ VOLATILITY_ADJUSTMENT: list[tuple[float, float, float]] = [
 
 MEANINGFUL_MOVEMENT_THRESHOLD: float = 0.05  # 5% monthly change (MVP default)
 
+# ── Factor normalisation ranges ───────────────────────────────────────────────
+# Used by score_service._norm() to map raw values → [-1, +1].
+# Tuple: (low_bound, high_bound, invert)
+# invert=True → high raw value maps to -1 (e.g. high PE = expensive = bad)
+# All values are MVP defaults — calibrate after backtesting.
+
+FACTOR_NORMALISATION: dict[str, tuple[float, float, bool]] = {
+    "liquidity":         (-5.0,  5.0, False),  # RBI surplus/deficit (₹ lakh cr); positive = loose
+    "rates":             ( 4.0, 10.0,  True),  # Repo rate %; lower = more accommodative
+    "credit_growth":     ( 5.0, 25.0, False),  # YoY bank credit growth %; higher = acceleration
+    "valuation":         (10.0, 40.0,  True),  # PE ratio; lower = cheaper = positive
+    "earnings":          ( 5.0, 30.0, False),  # ROE %; higher = better quality earnings
+    "relative_strength": ( 0.5,  2.0, False),  # RS ratio vs Nifty; >1 = outperforming
+    "usd_lens":          (-0.3,  0.3, False),  # Nifty 6M return in USD; positive = good
+    "gold_lens":         (-0.3,  0.3, False),  # Nifty 6M outperformance vs Gold
+    "sector_strength":   (-0.2,  0.2, False),  # Sector 6M outperformance vs Nifty
+}
+
 # ── Cross-asset instruments (now wired) ───────────────────────────────────────
 
 # Gold price proxy — GOLDBEES ETF on NSE tracks physical gold in INR.
