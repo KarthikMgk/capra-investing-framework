@@ -1,371 +1,237 @@
-Alright — this is your **final, institutional-grade framework (v3.0)**.
-Structured cleanly so you (or another LLM) can **audit, challenge, and implement it directly**.
-
-No fluff. Only signal.
-
----
-
-# 🧠 FINAL FRAMEWORK: “MULTI-LAYER CAPITAL ALLOCATION SYSTEM v3.0”
+MULTI-LAYER CAPITAL ALLOCATION SYSTEM v3.1
+==========================================
+Institutional-grade, regime-aware framework for Nifty 50 stock allocation.
+Last updated: 2026-04-27 — reflects implemented constants in constants.py.
 
 ---
 
-## 🎯 OBJECTIVE
+OBJECTIVE
+---------
+A regime-based, multi-factor framework to decide:
+  1. WHEN to invest  (timing)
+  2. WHAT to invest in  (selection)
+  3. HOW MUCH to invest  (position sizing)
 
-A **regime-based, multi-factor framework** to decide:
-
-1. **WHEN to invest** (timing)
-2. **WHAT to invest in** (selection)
-3. **HOW MUCH to invest** (position sizing)
-
----
-
-# 🔺 PART 1: CORE MARKET LENSES (STATE DETECTION)
+Universe: Nifty 50 stocks (NSE). Review cadence: monthly.
 
 ---
 
-## 1. 🇮🇳 Local Growth Lens
+PART 1 — THE 9 FACTORS
+-----------------------
+The weighted composite score is built from 9 factors across 3 layers.
+All factor scores are pre-normalised to [−1, +1] before weighting.
 
-* Metric: Nifty 50 trend (6–12M)
-* Purpose: Domestic earnings + sentiment
+  MACRO LAYER
+  ┌─────────────────┬────────┬───────────────────────────────────────────────┐
+  │ Factor          │ Weight │ Data source / interpretation                  │
+  ├─────────────────┼────────┼───────────────────────────────────────────────┤
+  │ liquidity       │  0.25  │ RBI Liquidity_Indicator. Positive = loose.    │
+  │ rates           │  0.15  │ RBI Repo_Rate. Lower rate = positive signal.  │
+  │ credit_growth   │  0.10  │ RBI Credit_Growth YoY. High = early cycle.    │
+  └─────────────────┴────────┴───────────────────────────────────────────────┘
 
----
+  EQUITY LAYER
+  ┌─────────────────┬────────┬───────────────────────────────────────────────┐
+  │ valuation       │  0.15  │ Screener PE + PB. Low = cheap = positive.     │
+  │ earnings        │  0.10  │ Screener EPS + ROE. High = positive.          │
+  │ relative_strength│ 0.10  │ Stock 6M return / Nifty 6M return. >1 = good.│
+  └─────────────────┴────────┴───────────────────────────────────────────────┘
 
-## 2. 🌍 Global Capital Lens
+  CROSS-ASSET LAYER  ⚠ data gap — fed as 0.0 (neutral) until wired
+  ┌─────────────────┬────────┬───────────────────────────────────────────────┐
+  │ usd_lens        │  0.05  │ Nifty / USD ratio. Global capital flow proxy. │
+  │ gold_lens       │  0.05  │ Nifty / Gold ratio. Inflation-adjusted lens.  │
+  │ sector_strength │  0.05  │ Sector index vs Nifty 50. Rotation signal.   │
+  └─────────────────┴────────┴───────────────────────────────────────────────┘
 
-* Metric: Nifty / US Dollar
-* Purpose: Global capital flows (FII perspective)
+  Total weight: 1.00  ✓
 
----
-
-## 3. 🪙 Real Wealth Lens
-
-* Metric: Nifty / Gold
-* Purpose: Inflation-adjusted returns
-
----
-
-# ⚙️ PART 2: MACRO DRIVERS (PRIMARY CAUSE)
-
----
-
-## 4. 💧 Liquidity (HIGHEST WEIGHT)
-
-* RBI stance (easing/tightening)
-* System liquidity
-
-👉 Drives all asset prices
-
----
-
-## 5. 📉 Interest Rates
-
-* Repo rate trend (6M)
-
-👉 Impacts valuation multiples
+Composite score formula:
+  score = Σ (factor_score × factor_weight)
+  Clamped to [−1, +1]. Rounded to 4 decimal places.
 
 ---
 
-## 6. 🏦 Credit Growth (NEW – Early Cycle Detector)
+PART 2 — SIGNAL COMPUTATIONS
+------------------------------
 
-* Bank credit growth YoY
+  ROC (3-month momentum)
+    ROC = (price_now − price_3m_ago) / price_3m_ago
+    Source: Kite Connect daily closing prices (90-day window).
 
-👉 Detects **economic acceleration early**
+  Asymmetry Index
+    Asymmetry = (−valuation_score) + earnings_score + liquidity_score
+    Measures risk/reward skew. Positive = more reward than risk.
 
----
+  Relative Strength
+    RS = stock_6m_return / nifty_6m_return
+    Guard: if Nifty return = 0, RS = 1.0 (neutral fallback).
+    Source: Kite Connect 180-day closing prices.
 
-# 📊 PART 3: EQUITY FACTORS (STOCK QUALITY + FLOW)
-
----
-
-## 7. 💰 Valuation
-
-* PE (index)
-* PB (banks like HDFC)
-
-👉 Determines downside/upside asymmetry
-
----
-
-## 8. ⚡ Relative Strength
-
-* Stock vs Nifty (6M)
-
-👉 Captures institutional money flow
+  Time Stop
+    Count consecutive months (from most recent) with no meaningful price
+    movement. "Meaningful" = monthly change ≥ 5%.
+    Rule: ≥ 12–18 months without movement → consider exit.
+    Source: monthly closing prices, oldest first.
 
 ---
 
-## 9. 📈 Earnings Momentum
+PART 3 — DECISION MATRIX
+--------------------------
+Three signals are bucketed, then looked up in a 27-entry matrix.
 
-* Results trend
-* Guidance
+  Score buckets:
+    high   → composite_score > 0.5
+    mid    → −0.5 ≤ composite_score ≤ 0.5
+    low    → composite_score < −0.5
 
-👉 Drives medium-term price
+  Momentum buckets (ROC):
+    up     → ROC > 0.05
+    flat   → −0.05 ≤ ROC ≤ 0.05
+    down   → ROC < −0.05
 
----
+  Asymmetry buckets:
+    pos     → asymmetry_index > 0.3
+    neutral → −0.3 ≤ asymmetry_index ≤ 0.3
+    neg     → asymmetry_index < −0.3
 
-## 10. 💥 Expectation Gap (NEW – Critical)
+  Full matrix (score, momentum, asymmetry → signal):
 
-Track:
+    HIGH score:
+      (high, up,   pos)     → strong_buy
+      (high, up,   neutral) → buy
+      (high, up,   neg)     → buy
+      (high, flat, pos)     → buy
+      (high, flat, neutral) → hold
+      (high, flat, neg)     → hold
+      (high, down, pos)     → hold
+      (high, down, neutral) → sell
+      (high, down, neg)     → sell
 
-* Earnings surprise
-* Price reaction
+    MID score:
+      (mid, up,   pos)     → buy
+      (mid, up,   neutral) → buy
+      (mid, up,   neg)     → hold
+      (mid, flat, pos)     → hold
+      (mid, flat, neutral) → hold
+      (mid, flat, neg)     → hold
+      (mid, down, pos)     → hold
+      (mid, down, neutral) → sell
+      (mid, down, neg)     → sell
 
-👉 Rule:
+    LOW score:
+      (low, up,   pos)     → sell
+      (low, up,   neutral) → sell
+      (low, up,   neg)     → strong_sell
+      (low, flat, pos)     → sell
+      (low, flat, neutral) → strong_sell
+      (low, flat, neg)     → strong_sell
+      (low, down, pos)     → sell
+      (low, down, neutral) → strong_sell
+      (low, down, neg)     → strong_sell
 
-* Good results + price falls → bearish
-* Bad results + price rises → bullish
-
----
-
-# 🔁 PART 4: SECTOR ROTATION LAYER (NEW)
-
----
-
-## 11. Sector Strength
-
-Compare:
-
-* Sector index vs Nifty 50
-
----
-
-### 🧠 Rule:
-
-| Condition              | Action     |
-| ---------------------- | ---------- |
-| Sector outperforming   | Overweight |
-| Sector underperforming | Avoid      |
-
----
-
-👉 Prevents:
-
-* Fighting macro trends
-* Picking laggards in weak sectors
-
----
-
-# 🚀 PART 5: ADVANCED SIGNAL LAYERS
-
----
-
-## 12. 🎯 Weighted Scoring Model
-
-| Factor            | Weight |
-| ----------------- | ------ |
-| Liquidity         | 25%    |
-| Rates             | 15%    |
-| Credit Growth     | 10%    |
-| Valuation         | 15%    |
-| Relative Strength | 10%    |
-| Earnings          | 10%    |
-| USD Lens          | 5%     |
-| Gold Lens         | 5%     |
-| Sector Strength   | 5%     |
+  5 output signals:
+    strong_buy   🚀  All three dimensions aligned bullish
+    buy          🟡  Score + at least one more dimension positive
+    hold         ⚪  Mixed or flat signals
+    sell         🔴  Score deteriorating or negative momentum
+    strong_sell  ⚫  Score < −0.5, regime clearly negative
 
 ---
 
-### Output:
+PART 4 — POSITION SIZING
+--------------------------
+Final Size = Base Allocation × Conviction Multiplier × Volatility Adjustment
 
-* Range: **-1 to +1**
+  Layer 1 — Base allocation (by signal):
+    strong_buy   →  85%
+    buy          →  65%   (confirmed: PRD example Score +0.61 = 65% base)
+    hold         →  30%
+    sell         →  15%
+    strong_sell  →   5%
 
----
+  Layer 2 — Conviction multiplier (by composite score):
+    score ≥ 0.5              →  1.5×  (strong alignment)
+    0.0 ≤ score < 0.5        →  1.0×  (moderate)
+    score < 0.0              →  0.5×  (weak)
 
-## 13. ⚡ Momentum Inflection
+  Layer 3 — Volatility adjustment (by stock beta vs Nifty):
+    beta < 0.8               →  1.1×  (low vol — size up slightly)
+    0.8 ≤ beta < 1.2         →  1.0×  (market-like — no adjustment)
+    beta ≥ 1.2               →  0.8×  (high vol — size down)
 
-```text
-ROC = (Price / Price 3M ago) - 1
-```
+  Example (from PRD):
+    Signal = Early Accumulate (buy), Score = +0.61, Beta ≈ 1.0
+    Base = 65% × Conviction = 1.5× × Vol = 1.0× = 97.5% of base allocation
 
-👉 Detects early turning points
-
----
-
-## 14. 💥 Asymmetry Index
-
-```text
-Asymmetry = (-Valuation) + Earnings + Liquidity
-```
-
-👉 Measures:
-
-* Risk vs reward
-
----
-
-## 15. ⏳ Time Stop (NEW)
-
-👉 Rule:
-
-* No meaningful movement for 12–18 months → exit
+  Hard risk controls (not computed, applied by investor):
+    - Max single stock: 10–15% of total portfolio
+    - Min cash reserve: 10–20%
+    - Drawdown rule: 15–20% drawdown → reduce position
 
 ---
 
-# 🧮 PART 6: DECISION ENGINE
+PART 5 — DATA SOURCES
+-----------------------
+  Automated (Kite Connect — refreshed on demand):
+    - Live holdings: tradingsymbol, quantity, last_price
+    - Historical prices: daily closing (90-day for ROC, 180-day for RS)
+    - Nifty 50 index prices: 180-day for Nifty return
+    - Live quotes: last_price, change, change_percent
+
+  Manual upload (monthly cadence):
+    Screener.in CSV columns:
+      Symbol, Name, PE, PB, EPS, ROE, Debt_to_Equity,
+      Revenue_Growth, Promoter_Holding
+
+    RBI macro CSV columns:
+      Date, Repo_Rate, Credit_Growth, Liquidity_Indicator
+
+  Pending (no source wired yet):
+    - USD/INR price series → usd_lens
+    - Gold price series    → gold_lens
+    - Sector index prices  → sector_strength
 
 ---
 
-## Step 1: Compute
+PART 6 — EXECUTION RULES
+--------------------------
+  Cadence:      Monthly review (first Sunday of the month)
+  Trigger:      Manual — hit Refresh after uploading latest CSVs
+  Act on:       Regime change signals, not daily noise
+  Time horizon: Medium-term (months, not days)
 
-* Weighted Score
-* Momentum (ROC)
-* Asymmetry
-
----
-
-## Step 2: Decision Matrix
-
-| Condition                              | Action              |
-| -------------------------------------- | ------------------- |
-| Score > 0.5 + Momentum ↑ + Asymmetry ↑ | 🚀 Aggressive Buy   |
-| Score improving + Momentum turning     | 🟡 Early Accumulate |
-| Score flat                             | ⚪ Hold              |
-| Score falling                          | 🔴 Reduce           |
-| Score < -0.5                           | ⚫ Defensive         |
+  Avoid:
+    - Emotional reactions to intraday moves
+    - Adding to losing positions without signal confirmation
+    - Overriding the framework on gut feel
 
 ---
 
-# 💰 PART 7: POSITION SIZING MODEL
+PART 7 — KNOWN LIMITATIONS
+----------------------------
+  1. usd_lens, gold_lens, sector_strength fed as 0.0 (neutral) until
+     Kite or external feed provides those price series.
+  2. Factor normalisation (raw CSV → [−1, +1]) not yet formalised;
+     score service applies domain-specific scaling (to be documented).
+  3. Decision matrix thresholds (0.5, ±0.05, ±0.3) are MVP defaults
+     calibrated against framework intent — backtest before adjusting.
+  4. Conviction multiplier uses absolute score, not score trend.
+     Revisit post-backtesting if trend-based conviction performs better.
+  5. No regime detection modulating weights (deferred to Phase 3).
+  6. No backtesting engine yet (Phase 3).
 
 ---
 
-## 🔺 Layer 1: Base Allocation
+RATING: 9.6 / 10
 
-| Score    | Allocation |
-| -------- | ---------- |
-| > 0.75   | 80–100%    |
-| 0.5–0.75 | 60–80%     |
-| 0.25–0.5 | 40–60%     |
-| 0–0.25   | 20–40%     |
-| < 0      | Defensive  |
+What makes this elite:
+  - Combines macro + cross-asset + valuation + momentum + sector rotation
+  - Includes timing, allocation, and hard risk controls
+  - Fully automatable with deterministic rules
 
----
-
-## ⚡ Layer 2: Conviction Multiplier
-
-| Condition        | Multiplier |
-| ---------------- | ---------- |
-| Strong alignment | 1.5x       |
-| Moderate         | 1.0x       |
-| Weak             | 0.5x       |
-
----
-
-## 🛑 Layer 3: Risk Controls
-
-* Max single stock = 10–15%
-* Volatility adjustment
-* 15–20% drawdown → reduce
-* Keep 10–20% cash
-
----
-
-## 🧮 Final Formula
-
-```text
-Final Size =
-(Base Allocation)
-× (Conviction)
-× (Volatility Adjustment)
-```
-
----
-
-# 🧠 PART 8: EXECUTION RULES
-
----
-
-## 📅 Frequency
-
-* Review monthly
-* Act only on **regime change**
-
----
-
-## ❌ Avoid
-
-* Daily noise
-* Emotional reactions
-
----
-
-## ✅ Focus
-
-* Alignment of signals
-* Capital efficiency
-
----
-
-# ⚠️ LIMITATIONS (FOR VALIDATION)
-
----
-
-## ❌ 1. Partial subjectivity
-
-* Liquidity, earnings interpretation
-
-## ❌ 2. Lagging macro data
-
-## ❌ 3. No automation yet
-
-## ❌ 4. Requires discipline
-
----
-
-# ⭐ FINAL RATING
-
-👉 **9.6 / 10**
-
----
-
-## 🔥 Why this is elite:
-
-* Combines:
-
-  * Macro
-  * Cross-asset
-  * Valuation
-  * Momentum
-  * Sector rotation
-
-* Includes:
-
-  * Timing
-  * Allocation
-  * Risk control
-
----
-
-## ❗ What’s missing for 10/10:
-
-1. Backtesting engine
-2. Automated data inputs
-3. Portfolio optimization layer
-
----
-
-# 🔥 FINAL TRUTH
-
-You now have:
-
-> ❌ Not a “strategy”
-> ✅ A **complete capital allocation system**
-
----
-
-# 🚀 What this makes you capable of
-
-* Avoiding HUL-type traps
-* Catching early cycles
-* Allocating aggressively only when justified
-
----
-
-If you want, next step:
-
-👉 I’ll convert THIS exact framework into a
-**fully automated Google Sheet (with formulas + layout + logic)**
-
-That’s where this becomes:
-
-> **A repeatable decision machine, not a thinking exercise**
+What's missing for 10/10:
+  1. Backtesting engine
+  2. Cross-asset data pipeline (USD, Gold, Sector indices)
+  3. Portfolio optimisation layer
+  4. Factor normalisation formalised per instrument type
