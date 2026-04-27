@@ -1,4 +1,4 @@
-import { Home, Users } from "lucide-react"
+import { Home, Search, Upload, Users } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
@@ -13,7 +13,13 @@ import { type Item, Main } from "./Main"
 import { User } from "./User"
 
 const baseItems: Item[] = [
-  { icon: Home, title: "Dashboard", path: "/" },
+  { icon: Home, title: "Portfolio", path: "/" },
+  { icon: Search, title: "Stock Search", path: "/stock" },
+]
+
+const adminItems: Item[] = [
+  { icon: Upload, title: "Upload Data", path: "/upload" },
+  { icon: Users, title: "Admin", path: "/admin" },
 ]
 
 export function AppSidebar() {
@@ -21,7 +27,7 @@ export function AppSidebar() {
 
   const items =
     currentUser?.role === "admin"
-      ? [...baseItems, { icon: Users, title: "Admin", path: "/admin" }]
+      ? [...baseItems, ...adminItems]
       : baseItems
 
   return (
