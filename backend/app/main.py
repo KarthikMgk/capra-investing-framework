@@ -12,7 +12,7 @@ from starlette.middleware.cors import CORSMiddleware
 from app.api.main import api_router
 from app.core.config import settings
 from app.core.db import engine, init_db
-from app.core.exceptions import AuthenticationError, AuthorizationError, CSVValidationError
+from app.core.exceptions import AuthenticationError, AuthorizationError, CSVValidationError, KiteAPIError
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -68,6 +68,14 @@ async def csv_validation_exception_handler(request: Request, exc: CSVValidationE
     return JSONResponse(
         status_code=400,
         content={"error": {"code": "CSV_COLUMN_MISSING", "message": exc.message, "details": exc.details}},
+    )
+
+
+@app.exception_handler(KiteAPIError)
+async def kite_api_exception_handler(request: Request, exc: KiteAPIError) -> JSONResponse:
+    return JSONResponse(
+        status_code=503,
+        content={"error": {"code": "KITE_API_ERROR", "message": exc.message, "details": exc.details}},
     )
 
 

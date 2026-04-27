@@ -18,8 +18,8 @@ class HoldingWithSignal(BaseModel):
     name: str
     quantity: float
     last_price: float
-    signal: str
-    signal_color: str
+    signal: str | None = None
+    signal_color: str | None = None
 
 
 class PortfolioResponse(BaseModel):
